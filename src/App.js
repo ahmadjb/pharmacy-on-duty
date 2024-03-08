@@ -124,7 +124,7 @@ const YourComponent = ({ latitude, longitude }) => {
                   {index === 11 ? (
                     <div style={{ fontSize: 16, fontWeight: 700, textAlign: 'center' }}>
                       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                        <QRCode value={`https://mvc.aeo.org.tr/account/login`} />
+                        <QRCode value={`https://yakinnobetcieczane.onrender.com`} />
                       </div>
                       <div style={{ backgroundColor: '', fontSize: 15, textAlign: 'center', lineHeight: '1.5', paddingTop: 20 }}>
                         Bu QR'yi tarayarak bu sayfaya cihazınızdan ulaşabilirsiniz.
