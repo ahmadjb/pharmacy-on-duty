@@ -1,15 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-
 import QRCode from 'qrcode.react';
 
-import NumberBlock from './block';
-
 const YourComponent = ({ latitude, longitude }) => {
-
-
-
-
 
 
   const [myLatitude, setMyLatitude] = useState(null);
@@ -18,10 +11,34 @@ const YourComponent = ({ latitude, longitude }) => {
   const [closestLocations, setClosestLocations] = useState([]);
   const [currentDate, setCurrentDate] = useState('');
   const [currentDay, setCurrentDay] = useState('');
+  const [cities, setCities] = useState([]);
+  const [selectedCity, setSelectedCity] = useState('');
 
   const pharmacyName = "Yeni Filiz Eczanesi"; // Specify the name of the pharmacy you want to search for
   const encodedPharmacyName = encodeURIComponent(pharmacyName);
   const mapsUrl = `https://www.google.com/maps?q=${encodedPharmacyName}`;
+
+
+
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('https://www.nosyapi.com/apiv2/service/pharmacies-on-duty/cities', {
+          params: {
+            'apiKey': 'nghLrrrA3KsrerJ0YaWCQb2VAfadnzQxUZllZNCUCY7nRhF2fnKPVEkDvKcr'
+          }
+        });
+        setCities(response.data.data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+
 
   useEffect(() => {
     const today = new Date();
@@ -41,7 +58,7 @@ const YourComponent = ({ latitude, longitude }) => {
         const response = await axios.get('https://www.nosyapi.com/apiv2/service/pharmacies-on-duty', {
           params: {
             'apiKey': 'nghLrrrA3KsrerJ0YaWCQb2VAfadnzQxUZllZNCUCY7nRhF2fnKPVEkDvKcr',
-            'city': 'ankara'
+            'city': selectedCity
           }
         });
         setOpenedPharmacies(response.data.data);
@@ -51,7 +68,7 @@ const YourComponent = ({ latitude, longitude }) => {
     };
 
     fetchData();
-  }, []);
+  }, [selectedCity]);
 
 
 
@@ -74,7 +91,7 @@ const YourComponent = ({ latitude, longitude }) => {
 
   useEffect(() => {
     if (myLatitude !== null && myLongitude !== null && openedPharmacies.length > 0) {
-      const distances = openedPharmacies.map(location => {
+      const distances = openedPharmacies.map((location, index) => {
         const earthRadius = 6371; // Earth's radius in km
         const dLat = (myLatitude - location.latitude) * Math.PI / 180;
         const dLon = (myLongitude - location.longitude) * Math.PI / 180;
@@ -83,7 +100,15 @@ const YourComponent = ({ latitude, longitude }) => {
           Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         const distance = earthRadius * c;
-        return { location, distance };
+
+        // Add the distance as a new key to the location object
+        const locationWithDistance = { ...location, distance };
+
+        // Log the distance for each location
+        console.log(`Distance to ${openedPharmacies[index].pharmacyName}: ${distance} km`);
+
+        return { location: locationWithDistance, distance };
+
       });
 
       const sortedDistances = distances.sort((a, b) => a.distance - b.distance);
@@ -96,14 +121,27 @@ const YourComponent = ({ latitude, longitude }) => {
 
   console.log(closestLocations);
   // const numbers = Array.from({ length: 25 }, (_, index) => index + 1);
-
+  console.log(cities);
   return (
     <div>
 
+
+
       <div className='main-container'>
         <div className='row' style={{ width: '100%', backgroundColor: '', display: 'flex', justifyContent: 'space-between' }}>
-          <div className='col-md-3 col-12 text-center' style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-            {currentDay} / {currentDate}
+          <div className='col-md-3 col-12 text-center' style={{ display: '', justifyContent: 'center', alignItems: 'center', paddingTop: 20 }}>
+            <div>{currentDay} / {currentDate}</div>
+            <div>
+              <div>
+                {cities.length > 0 && (
+                  <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)}>
+                    <option value="">Bir şehir seçin</option>
+                    {cities.map((city, index) => (
+                      <option key={index} value={city.slug}>{city.slug}</option>
+                    ))}
+                  </select>
+                )}
+              </div></div>
           </div>
 
           <div className='col-md-5 col-12 text-center'>
@@ -116,43 +154,63 @@ const YourComponent = ({ latitude, longitude }) => {
         </div>
 
         <div className="container" style={{ border: '5px solid gray' }}>
+          {selectedCity === "" && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',fontSize:40, textAlign: 'center' }}>
+            Lütfen bir şehir seçiniz
+            </div>
+          )}
           <div className="row">
             {closestLocations.length > 0 && closestLocations?.map((number, index) => (
               <div key={index} className="col-md-3 col-sm-6" style={{ padding: 6, border: '2px solid gray' }}>
                 <div style={{ border: 10, padding: 10, backgroundColor: 'white', borderRadius: 5, border: '' }}>
                   {/*{closestLocations[index]?.pharmacyName}*/}
-                  {index === 11 ? (
-                    <div style={{ fontSize: 16, fontWeight: 700, textAlign: 'center' }}>
-                      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                        <QRCode value={`https://yakinnobetcieczane.onrender.com`} />
-                      </div>
-                      <div style={{ backgroundColor: '', fontSize: 15, textAlign: 'center', lineHeight: '1.5', paddingTop: 20 }}>
-                        Bu QR'yi tarayarak bu sayfaya cihazınızdan ulaşabilirsiniz.
-                      </div>
-                    </div>
-
-                  ) : (
-                    <>
-                      <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 22, fontWeight: 900 }}>{closestLocations[index]?.pharmacyName}</div>
-                      <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 15, textAlign: 'center', lineHeight: '1.5' }}>{closestLocations[index]?.address}</div>
-                      <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 20, fontWeight: 500 }}>{closestLocations[index]?.district}</div>
-                      <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 15, fontWeight: 500 }}>TEL: {closestLocations[index]?.phone}</div>
-
-                      <a href={`https://www.google.com/maps?q=${encodeURIComponent(`${closestLocations[index]?.pharmacyName}`)}`} target="_blank" rel="noopener noreferrer">
-                        <div style={{ backgroundColor: '' }}>
-                          <QRCode value={`https://www.google.com/maps?q=${encodeURIComponent(`${closestLocations[index]?.pharmacyName}`)}`} style={{ height: 60, width: 60, marginTop: -20 }} />
+                  {
+                    closestLocations.length > 0 ? (
+                      index === 11 ? (
+                        <div style={{ fontSize: 16, fontWeight: 700, textAlign: 'center' }}>
+                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <QRCode value={`https://yakinnobetcieczane.onrender.com`} />
+                          </div>
+                          <div style={{ backgroundColor: '', fontSize: 15, textAlign: 'center', lineHeight: '1.5', paddingTop: 20 }}>
+                            Bu QR'yi tarayarak bu sayfaya cihazınızdan ulaşabilirsiniz.
+                          </div>
                         </div>
-                      </a>
+                      ) : index === closestLocations.length - 1 ? (
+                        <div style={{ fontSize: 16, fontWeight: 700, textAlign: 'center' }}>
+                          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <QRCode value={`https://yakinnobetcieczane.onrender.com`} />
+                          </div>
+                          <div style={{ backgroundColor: '', fontSize: 15, textAlign: 'center', lineHeight: '1.5', paddingTop: 20 }}>
+                            Bu QR'yi tarayarak bu sayfaya cihazınızdan ulaşabilirsiniz.
+                          </div>
+                        </div>
+                      ) : (
+                        <>
+                          <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 22, fontWeight: 900, textAlign: 'center' }}>{closestLocations[index]?.pharmacyName}</div>
+                          <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 15, textAlign: 'center', lineHeight: '1.5' }}>
+                            {closestLocations[index]?.address}
+                          </div>
+                          <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 20, fontWeight: 500 }}>
+                            {`${closestLocations[index]?.district} (${Math.floor(closestLocations[index]?.distance)}-${Math.floor(closestLocations[index]?.distance + 2)})km`}
+                          </div>
+                          <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 15, fontWeight: 400 }}>
+                            TEL: <a href={`tel:${closestLocations[index]?.phone}`} className="linkStyle">{closestLocations[index]?.phone}</a>
+                          </div>
 
-                    </>
-                  )}
+                          <a href={`https://www.google.com/maps?q=${encodeURIComponent(`${closestLocations[index]?.pharmacyName}`)}`} target="_blank" rel="noopener noreferrer">
+                            <div style={{ backgroundColor: '' }}>
+                              <QRCode value={`https://www.google.com/maps?q=${encodeURIComponent(`${closestLocations[index]?.pharmacyName}`)}`} style={{ height: 60, width: 60, marginTop: -20 }} />
+                            </div>
+                          </a>
+
+                        </>
+                      )
+                    )
+                      : null}
                 </div>
-
                 {(index + 1) % 4 === 0 && <div className="w-100"></div>} {/* Add a new row after every 4 items */}
               </div>
             ))}
-
-
           </div>
         </div>
 
