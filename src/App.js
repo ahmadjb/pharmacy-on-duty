@@ -191,7 +191,7 @@ const YourComponent = ({ latitude, longitude }) => {
                             {closestLocations[index]?.address}
                           </div>
                           <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 20, fontWeight: 500 }}>
-                            {`${closestLocations[index]?.district} (${Math.floor(closestLocations[index]?.distance)}-${Math.floor(closestLocations[index]?.distance + 2)})km`}
+                            {`${closestLocations[index]?.district} (${Math.round(closestLocations[index]?.distance)}-${Math.round(closestLocations[index]?.distance + 2)})km`}
                           </div>
                           <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 15, fontWeight: 400 }}>
                             TEL: <a href={`tel:${closestLocations[index]?.phone}`} className="linkStyle">{closestLocations[index]?.phone}</a>
