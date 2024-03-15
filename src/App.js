@@ -190,7 +190,7 @@ const YourComponent = ({ latitude, longitude }) => {
                           <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 15, textAlign: 'center', lineHeight: '1.5' }}>
                             {closestLocations[index]?.address}
                           </div>
-                          <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 20, fontWeight: 500 }}>
+                          <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 20, fontWeight: 500,color:'red' }}>
                             {`${closestLocations[index]?.district} (${Math.round(closestLocations[index]?.distance)}-${Math.round(closestLocations[index]?.distance + 2)})km`}
                           </div>
                           <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 15, fontWeight: 400 }}>
