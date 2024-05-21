@@ -13,6 +13,8 @@ const YourComponent = ({ latitude, longitude }) => {
   const [currentDay, setCurrentDay] = useState('');
   const [cities, setCities] = useState([]);
   const [selectedCity, setSelectedCity] = useState('');
+  const [geolocation, setGocation] = useState(false);
+  
 
   const pharmacyName = "Yeni Filiz Eczanesi"; // Specify the name of the pharmacy you want to search for
   const encodedPharmacyName = encodeURIComponent(pharmacyName);
@@ -20,6 +22,28 @@ const YourComponent = ({ latitude, longitude }) => {
 
 
 
+
+  useEffect(() => {
+    if (selectedCity) {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            console.log('Location is enabled');
+            setGocation(true);
+          },
+          (error) => {
+            const openSettings = window.confirm('Konum etkin değil. Lütfen etkinleştirin.');
+            if (openSettings) {
+              window.location.href = 'app-settings:';
+            }
+          }
+        );
+      }
+    }
+
+    //fetchPharmacies();
+
+  }, []);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -133,26 +157,12 @@ const YourComponent = ({ latitude, longitude }) => {
       const response = await axios.get('https://www.nosyapi.com/apiv2/service/pharmacies', {
         params: {
           'apiKey': 'nghLrrrA3KsrerJ0YaWCQb2VAfadnzQxUZllZNCUCY7nRhF2fnKPVEkDvKcr',
-          'city':'ankara'
+          'city': 'ankara'
         }
       });
-      console.log("responsesssssssssss",response);
+      console.log("responsesssssssssss", response);
       setPharmacies2(response);
     };
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          console.log('Location is enabled');
-        },
-        (error) => {
-          const openSettings = window.confirm('Location is not enabled. Would you like to open the settings to enable it?');
-          if (openSettings) {
-            window.location.href = 'app-settings:';
-          }
-        }
-      );
-    }
 
     //fetchPharmacies();
 
@@ -160,7 +170,7 @@ const YourComponent = ({ latitude, longitude }) => {
 
   console.log('Pharmacies in ankara:', pharmacies2?.data?.data);
   console.log("---------------------------------------");
- // Log the pharmacies array
+  // Log the pharmacies array
 
   return (
     <div>
@@ -172,9 +182,9 @@ const YourComponent = ({ latitude, longitude }) => {
           <div className='col-md-3 col-12 text-center' style={{ display: '', justifyContent: 'center', alignItems: 'center', paddingTop: 20 }}>
             <div>{currentDay} / {currentDate}</div>
             <div>
-              <div style={{paddingBottom:7}}>
+              <div style={{ paddingBottom: 7 }}>
                 {cities.length > 0 && (
-                  <select  style={{borderWidth:4,borderColor:'red'}} value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)}>
+                  <select style={{ borderWidth: 4, borderColor: 'red' }} value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)}>
                     <option value="">Bir şehir seçin</option>
                     {cities.map((city, index) => (
                       <option key={index} value={city.slug}>{city.slug}</option>
@@ -199,6 +209,12 @@ const YourComponent = ({ latitude, longitude }) => {
               Lütfen bir şehir seçiniz
             </div>
           )}
+          {geolocation === false  &&  selectedCity != "" && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 40, textAlign: 'center',color:'red' }}>
+            Konum etkin değil. Lütfen etkinleştirin.
+            </div>
+          )}
+         
           <div className="row">
             {closestLocations.length > 0 && closestLocations?.map((number, index) => (
               <div key={index} className="col-md-3 col-sm-6" style={{ padding: 6, border: '2px solid gray' }}>
