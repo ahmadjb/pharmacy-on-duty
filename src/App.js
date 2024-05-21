@@ -14,7 +14,7 @@ const YourComponent = ({ latitude, longitude }) => {
   const [cities, setCities] = useState([]);
   const [selectedCity, setSelectedCity] = useState('');
   const [geolocation, setGocation] = useState(false);
-  
+
 
   const pharmacyName = "Yeni Filiz Eczanesi"; // Specify the name of the pharmacy you want to search for
   const encodedPharmacyName = encodeURIComponent(pharmacyName);
@@ -174,9 +174,6 @@ const YourComponent = ({ latitude, longitude }) => {
 
   return (
     <div>
-
-
-
       <div className='main-container'>
         <div className='row' style={{ width: '100%', backgroundColor: '', display: 'flex', justifyContent: 'space-between' }}>
           <div className='col-md-3 col-12 text-center' style={{ display: '', justifyContent: 'center', alignItems: 'center', paddingTop: 20 }}>
@@ -191,7 +188,8 @@ const YourComponent = ({ latitude, longitude }) => {
                     ))}
                   </select>
                 )}
-              </div></div>
+              </div>
+            </div>
           </div>
 
           <div className='col-md-5 col-12 text-center'>
@@ -204,17 +202,17 @@ const YourComponent = ({ latitude, longitude }) => {
         </div>
 
         <div className="container" style={{ border: '5px solid gray' }}>
-          {selectedCity === "" && (
+          {selectedCity === "" ? (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 40, textAlign: 'center' }}>
               Lütfen bir şehir seçiniz
             </div>
-          )}
-          {geolocation === false  &&  selectedCity != "" && (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 40, textAlign: 'center',color:'red' }}>
-            Konum etkin değil. Lütfen etkinleştirin.
+          ):""}
+          {(geolocation === false && selectedCity !== "" && closestLocations.length === 0) ?  (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 40, textAlign: 'center', color: 'red' }}>
+              Konum etkin değil. Lütfen etkinleştirin.
             </div>
-          )}
-         
+          ):""}
+
           <div className="row">
             {closestLocations.length > 0 && closestLocations?.map((number, index) => (
               <div key={index} className="col-md-3 col-sm-6" style={{ padding: 6, border: '2px solid gray' }}>
@@ -253,9 +251,9 @@ const YourComponent = ({ latitude, longitude }) => {
                             TEL: <a href={`tel:${closestLocations[index]?.phone}`} className="linkStyle">{closestLocations[index]?.phone}</a>
                           </div>
 
-                          <a href={`https://www.google.com/maps?q=${encodeURIComponent(`${closestLocations[index]?.pharmacyName}`)}`} target="_blank" rel="noopener noreferrer">
+                          <a href={`https://www.google.com/maps?q=${encodeURIComponent(`${closestLocations[index]?.pharmacyName}${closestLocations[index]?.address}`)}`} target="_blank" rel="noopener noreferrer">
                             <div style={{ backgroundColor: '' }}>
-                              <QRCode value={`https://www.google.com/maps?q=${encodeURIComponent(`${closestLocations[index]?.pharmacyName}`)}`} style={{ height: 60, width: 60, marginTop: -20 }} />
+                              <QRCode value={`https://www.google.com/maps?q=${encodeURIComponent(`${closestLocations[index]?.pharmacyName}${closestLocations[index]?.address}`)}`} style={{ height: 60, width: 60, marginTop: -20 }} />
                             </div>
                           </a>
 
