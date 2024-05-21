@@ -29,7 +29,7 @@ const YourComponent = ({ latitude, longitude }) => {
             'apiKey': 'nghLrrrA3KsrerJ0YaWCQb2VAfadnzQxUZllZNCUCY7nRhF2fnKPVEkDvKcr'
           }
         });
-        setCities(response.data.data);
+        setCities(response?.data?.data);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -117,11 +117,51 @@ const YourComponent = ({ latitude, longitude }) => {
     }
   }, [myLatitude, myLongitude, openedPharmacies]);
 
-  console.log(openedPharmacies);
+  //console.log(openedPharmacies);
 
-  console.log(closestLocations);
+  //console.log(closestLocations);
   // const numbers = Array.from({ length: 25 }, (_, index) => index + 1);
-  console.log(cities);
+  //console.log(cities);
+
+
+  const [pharmacies, setPharmacies] = useState([]);
+  const [pharmacies2, setPharmacies2] = useState([]);
+
+  useEffect(() => {
+    const fetchPharmacies = async () => {
+
+      const response = await axios.get('https://www.nosyapi.com/apiv2/service/pharmacies', {
+        params: {
+          'apiKey': 'nghLrrrA3KsrerJ0YaWCQb2VAfadnzQxUZllZNCUCY7nRhF2fnKPVEkDvKcr',
+          'city':'ankara'
+        }
+      });
+      console.log("responsesssssssssss",response);
+      setPharmacies2(response);
+    };
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log('Location is enabled');
+        },
+        (error) => {
+          const openSettings = window.confirm('Location is not enabled. Would you like to open the settings to enable it?');
+          if (openSettings) {
+            window.location.href = 'app-settings:';
+          }
+        }
+      );
+    }
+
+    //fetchPharmacies();
+
+  }, []); // Empty dependency array to run effect only once
+
+  console.log('Pharmacies in ankara:', pharmacies2?.data?.data);
+  console.log("---------------------------------------");
+ // Log the pharmacies array
+
   return (
     <div>
 
@@ -132,9 +172,9 @@ const YourComponent = ({ latitude, longitude }) => {
           <div className='col-md-3 col-12 text-center' style={{ display: '', justifyContent: 'center', alignItems: 'center', paddingTop: 20 }}>
             <div>{currentDay} / {currentDate}</div>
             <div>
-              <div>
+              <div style={{paddingBottom:7}}>
                 {cities.length > 0 && (
-                  <select value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)}>
+                  <select  style={{borderWidth:4,borderColor:'red'}} value={selectedCity} onChange={(e) => setSelectedCity(e.target.value)}>
                     <option value="">Bir şehir seçin</option>
                     {cities.map((city, index) => (
                       <option key={index} value={city.slug}>{city.slug}</option>
@@ -155,8 +195,8 @@ const YourComponent = ({ latitude, longitude }) => {
 
         <div className="container" style={{ border: '5px solid gray' }}>
           {selectedCity === "" && (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center',fontSize:40, textAlign: 'center' }}>
-            Lütfen bir şehir seçiniz
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 40, textAlign: 'center' }}>
+              Lütfen bir şehir seçiniz
             </div>
           )}
           <div className="row">
@@ -190,7 +230,7 @@ const YourComponent = ({ latitude, longitude }) => {
                           <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 15, textAlign: 'center', lineHeight: '1.5' }}>
                             {closestLocations[index]?.address}
                           </div>
-                          <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 20, fontWeight: 500,color:'red' }}>
+                          <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 20, fontWeight: 500, color: 'red' }}>
                             {`${closestLocations[index]?.district} (${Math.round(closestLocations[index]?.distance)}-${Math.round(closestLocations[index]?.distance + 2)})km`}
                           </div>
                           <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 15, fontWeight: 400 }}>
