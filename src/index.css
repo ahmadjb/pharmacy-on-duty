@@ -16,7 +16,7 @@ code {
 .main-container {
   padding-left: 100px;
   padding-right: 100px;
-  padding-top: 0;
+  padding-top: 42px;
   width: 100%;
   height: 100%;
 }
@@ -56,6 +56,37 @@ code {
 
 .city-select {
   border: 4px solid red;
+}
+
+.language-select-wrapper {
+  padding-top: 6px;
+}
+
+.language-switcher {
+  align-items: center;
+  background-color: white;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+  display: flex;
+  gap: 6px;
+  max-width: calc(100vw - 32px);
+  padding: 8px 10px;
+  position: fixed;
+  right: 16px;
+  top: 16px;
+  z-index: 1000;
+}
+
+.language-select-label {
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.language-select {
+  border: 1px solid gray;
+  border-radius: 4px;
+  padding: 4px 8px;
 }
 
 .pharmacy-results {
@@ -240,10 +271,37 @@ code {
   .main-container {
     padding-left: 5px;
     padding-right: 5px;
+    padding-top: 58px;
+  }
+
+  .language-switcher {
+    font-size: 14px;
+    right: 10px;
+    top: 10px;
+  }
+
+  .language-select {
+    max-width: 120px;
   }
 }
 
 .linkStyle {
   color: rgb(0, 0, 0) !important;
   text-decoration: none !important;
+}
+
+[dir="rtl"] .manual-location__input {
+  text-align: right;
+}
+
+[dir="rtl"] .language-switcher {
+  left: 16px;
+  right: auto;
+}
+
+@media (max-width: 767px) {
+  [dir="rtl"] .language-switcher {
+    left: 10px;
+    right: auto;
+  }
 }

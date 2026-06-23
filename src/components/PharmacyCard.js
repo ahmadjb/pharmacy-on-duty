@@ -1,7 +1,7 @@
 import QRCode from 'qrcode.react';
 import { getPharmacyMapUrl } from '../utils/maps';
 
-const PharmacyCard = ({ pharmacy }) => {
+const PharmacyCard = ({ pharmacy, text }) => {
   const mapUrl = getPharmacyMapUrl(pharmacy);
 
   return (
@@ -14,7 +14,7 @@ const PharmacyCard = ({ pharmacy }) => {
         {`${pharmacy?.district} (${Math.round(pharmacy?.distance)}-${Math.round(pharmacy?.distance + 2)})km`}
       </div>
       <div className="pharmacy-card__phone">
-        TEL: <a href={`tel:${pharmacy?.phone}`} className="linkStyle">{pharmacy?.phone}</a>
+        {text.phone}: <a href={`tel:${pharmacy?.phone}`} className="linkStyle">{pharmacy?.phone}</a>
       </div>
 
       <a href={mapUrl} target="_blank" rel="noopener noreferrer">

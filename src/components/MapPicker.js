@@ -7,7 +7,7 @@ const DEFAULT_CENTER = {
   longitude: 32.8541,
 };
 
-const MapPicker = ({ selectedLocation, currentLocation, onLocationSelect }) => {
+const MapPicker = ({ selectedLocation, currentLocation, text, onLocationSelect }) => {
   const mapContainerRef = useRef(null);
   const mapRef = useRef(null);
   const markerRef = useRef(null);
@@ -82,7 +82,7 @@ const MapPicker = ({ selectedLocation, currentLocation, onLocationSelect }) => {
   return (
     <div className="map-picker">
       <div className="map-picker__map" ref={mapContainerRef} />
-      <div className="map-picker__hint">Haritadan bir nokta seçmek için haritaya tıklayın.</div>
+      <div className="map-picker__hint">{text.mapHint}</div>
     </div>
   );
 };

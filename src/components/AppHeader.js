@@ -1,11 +1,18 @@
-const AppHeader = ({ currentDay, currentDate, cities, selectedCity, onCityChange }) => (
+const AppHeader = ({
+  currentDay,
+  currentDate,
+  cities,
+  selectedCity,
+  text,
+  onCityChange,
+}) => (
   <div className="row app-header">
     <div className="col-md-3 col-12 text-center app-header__left">
       <div>{currentDay} / {currentDate}</div>
       <div className="app-header__select-wrapper">
         {cities.length > 0 && (
           <select className="city-select" value={selectedCity} onChange={(event) => onCityChange(event.target.value)}>
-            <option value="">Bir şehir seçin</option>
+            <option value="">{text.cityPlaceholder}</option>
             {cities.map((city) => (
               <option key={city.slug} value={city.slug}>{city.slug}</option>
             ))}
@@ -16,14 +23,14 @@ const AppHeader = ({ currentDay, currentDate, cities, selectedCity, onCityChange
 
     <div className="col-md-5 col-12 text-center">
       <div className="app-title">
-        ANKARA ECZACI ODASI
+        {text.titleLine1}
         <br />
-        NÖBETÇİ ECZANELER
+        {text.titleLine2}
       </div>
     </div>
 
     <div className="col-md-3 col-12 text-center app-header__right">
-      Nöbetçi Eczanenin Konum Bilgisi için Karekodu Okutunuz
+      {text.qrInfo}
     </div>
   </div>
 );

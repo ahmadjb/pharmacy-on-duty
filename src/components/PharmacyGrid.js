@@ -1,7 +1,7 @@
 import PageQrCard from './PageQrCard';
 import PharmacyCard from './PharmacyCard';
 
-const PharmacyGrid = ({ pharmacies }) => (
+const PharmacyGrid = ({ pharmacies, text }) => (
   <div className="row">
     {pharmacies.map((pharmacy, index) => {
       const shouldShowPageQr = index === 11 || index === pharmacies.length - 1;
@@ -10,9 +10,9 @@ const PharmacyGrid = ({ pharmacies }) => (
         <div key={`${pharmacy?.pharmacyName}-${pharmacy?.address}-${index}`} className="col-md-3 col-sm-6 pharmacy-grid__item">
           <div className="pharmacy-card">
             {shouldShowPageQr ? (
-              <PageQrCard />
+              <PageQrCard text={text} />
             ) : (
-              <PharmacyCard pharmacy={pharmacy} />
+              <PharmacyCard pharmacy={pharmacy} text={text} />
             )}
           </div>
           {(index + 1) % 4 === 0 && <div className="w-100"></div>}

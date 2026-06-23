@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import AppHeader from './components/AppHeader';
 import LocationSelector from './components/LocationSelector';
 import PharmacyGrid from './components/PharmacyGrid';
+import { DATE_LOCALES, LANGUAGE_OPTIONS, translations } from './i18n/translations';
 import { geocodeAddress, isGoogleMapsUrl, resolveGoogleMapsLink } from './services/geocodingApi';
 import { fetchCities, fetchOnDutyPharmacies } from './services/pharmacyApi';
 import { getClosestLocations, parseCoordinates } from './utils/location';
@@ -23,6 +24,8 @@ const App = () => {
   const [manualLocationText, setManualLocationText] = useState('');
   const [manualLocation, setManualLocation] = useState(null);
   const [manualLocationError, setManualLocationError] = useState('');
+  const [selectedLanguage, setSelectedLanguage] = useState('tr');
+  const text = translations[selectedLanguage];
 
   useEffect(() => {
     const loadCities = async () => {
@@ -40,10 +43,11 @@ const App = () => {
   useEffect(() => {
     const today = new Date();
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
+    const locale = DATE_LOCALES[selectedLanguage];
 
-    setCurrentDate(today.toLocaleDateString('tr-TR', options));
-    setCurrentDay(today.toLocaleDateString('tr-TR', { weekday: 'long' }));
-  }, []);
+    setCurrentDate(today.toLocaleDateString(locale, options));
+    setCurrentDay(today.toLocaleDateString(locale, { weekday: 'long' }));
+  }, [selectedLanguage]);
 
   useEffect(() => {
     if (!selectedCity) {
@@ -105,7 +109,7 @@ const App = () => {
     const coordinates = parseCoordinates(trimmedLocationText);
 
     if (!trimmedLocationText) {
-      setManualLocationError('Lütfen adres, Google Maps linki veya koordinat giriniz.');
+      setManualLocationError('emptyLocation');
       return;
     }
 
@@ -126,11 +130,11 @@ const App = () => {
         }
 
         setManualLocation(null);
-        setManualLocationError('Google Maps linkinden konum okunamadı. Lütfen linki kontrol ediniz veya koordinat giriniz.');
+        setManualLocationError('mapsLinkNotReadable');
         return;
       } catch (error) {
         console.error('Error resolving Google Maps link:', error);
-        setManualLocationError('Google Maps linki okunurken hata oluştu. Lütfen tekrar deneyiniz.');
+        setManualLocationError('mapsLinkFailed');
         return;
       }
     }
@@ -140,7 +144,7 @@ const App = () => {
 
       if (!geocodedLocation) {
         setManualLocation(null);
-        setManualLocationError('Adres bulunamadı. Lütfen daha açık bir adres, Google Maps linki veya "39.9208, 32.8541" formatında koordinat giriniz.');
+        setManualLocationError('addressNotFound');
         return;
       }
 
@@ -148,7 +152,7 @@ const App = () => {
       setManualLocationError('');
     } catch (error) {
       console.error('Error geocoding address:', error);
-      setManualLocationError('Adres aranırken hata oluştu. Lütfen tekrar deneyiniz.');
+      setManualLocationError('addressSearchFailed');
     }
   };
 
@@ -159,20 +163,29 @@ const App = () => {
   };
 
   return (
-    <div>
+    <div lang={selectedLanguage} dir={selectedLanguage === 'ar' ? 'rtl' : 'ltr'}>
+      <div className="language-switcher">
+        <label className="language-select-label" htmlFor="language-select">{text.languageLabel}: </label>
+        <select id="language-select" className="language-select" value={selectedLanguage} onChange={(event) => setSelectedLanguage(event.target.value)}>
+          {LANGUAGE_OPTIONS.map((language) => (
+            <option key={language.code} value={language.code}>{language.label}</option>
+          ))}
+        </select>
+      </div>
       <div className='main-container'>
         <AppHeader
           currentDay={currentDay}
           currentDate={currentDate}
           cities={cities}
           selectedCity={selectedCity}
+          text={text}
           onCityChange={setSelectedCity}
         />
 
         <div className="container pharmacy-results">
           {selectedCity === "" ? (
             <div className="empty-state">
-              Lütfen bir şehir seçiniz
+              {text.chooseCity}
             </div>
           ) : null}
 
@@ -180,8 +193,9 @@ const App = () => {
             locationMode={locationMode}
             manualLocationText={manualLocationText}
             manualLocation={manualLocation}
-            manualLocationError={manualLocationError}
+            manualLocationError={manualLocationError ? text.errors[manualLocationError] : ''}
             currentLocation={currentLocation}
+            text={text}
             onModeChange={handleLocationModeChange}
             onManualLocationTextChange={setManualLocationText}
             onManualLocationSubmit={handleManualLocationSubmit}
@@ -190,21 +204,20 @@ const App = () => {
 
           {(locationMode === LOCATION_MODES.CURRENT && geolocation === false && selectedCity !== "" && closestLocations.length === 0) ? (
             <div className="error-state error-state--large">
-              Konum etkin değil. Lütfen etkinleştirin.
+              {text.locationDisabled}
             </div>
           ) : null}
 
           {(locationMode === LOCATION_MODES.MANUAL && selectedCity !== "" && !manualLocation) ? (
             <div className="error-state">
-              Lütfen hesaplama için bir nokta giriniz.
+              {text.enterPoint}
             </div>
           ) : null}
 
-          <PharmacyGrid pharmacies={closestLocations} />
+          <PharmacyGrid pharmacies={closestLocations} text={text} />
         </div>
 
-        <div className="working-hours text-center">Eczanelerimiz, hafta içi 08.30-19.00, Cumartesi 09.30-19.00 arası çalışır. Nöbetçi eczaneler ertesi gün açılış saatine kadar
-          hizmet verir, Pazar ve tatil günlerinde ise 09.30’da açılır, ertesi güne kadar hizmet verir.</div>
+        <div className="working-hours text-center">{text.workingHours}</div>
 
       </div>
 

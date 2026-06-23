@@ -6,6 +6,7 @@ const LocationSelector = ({
   manualLocation,
   manualLocationError,
   currentLocation,
+  text,
   onModeChange,
   onManualLocationTextChange,
   onManualLocationSubmit,
@@ -18,14 +19,14 @@ const LocationSelector = ({
         className={`location-mode-button ${locationMode === 'current' ? 'location-mode-button--active' : ''}`}
         onClick={() => onModeChange('current')}
       >
-        Benim konumum
+        {text.myLocation}
       </button>
       <button
         type="button"
         className={`location-mode-button ${locationMode === 'manual' ? 'location-mode-button--active' : ''}`}
         onClick={() => onModeChange('manual')}
       >
-        Nokta seç
+        {text.choosePoint}
       </button>
     </div>
 
@@ -36,24 +37,25 @@ const LocationSelector = ({
             type="text"
             value={manualLocationText}
             onChange={(event) => onManualLocationTextChange(event.target.value)}
-            placeholder="Google Maps linki veya koordinat giriniz"
+            placeholder={text.manualLocationPlaceholder}
             className="manual-location__input"
           />
           <button type="button" onClick={onManualLocationSubmit} className="manual-location__submit">
-            Konumu kullan
+            {text.useLocation}
           </button>
         </div>
         <div className="manual-location__hint">
-          Örnek: adres, Google Maps paylaşım linki ya da 39.9208, 32.8541
+          {text.manualLocationHint}
         </div>
         <MapPicker
           selectedLocation={manualLocation}
           currentLocation={currentLocation}
+          text={text}
           onLocationSelect={onMapLocationSelect}
         />
         {manualLocation ? (
           <div className="manual-location__success">
-            Seçilen nokta: {manualLocation.latitude}, {manualLocation.longitude}
+            {text.selectedPoint}: {manualLocation.latitude}, {manualLocation.longitude}
           </div>
         ) : null}
         {manualLocationError ? (
