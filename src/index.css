@@ -19,15 +19,208 @@ code {
   padding-top: 0;
   width: 100%;
   height: 100%;
-  background-color: ''; /* Add your desired background color here */
 }
+
+.app-header {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}
+
+.app-header__left {
+  align-items: center;
+  justify-content: center;
+  padding-top: 20px;
+}
+
+.app-header__right,
+.working-hours {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.app-header__select-wrapper {
+  padding-bottom: 7px;
+}
+
+.app-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 25px;
+  font-weight: 900;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.city-select {
+  border: 4px solid red;
+}
+
+.pharmacy-results {
+  border: 5px solid gray;
+}
+
+.empty-state,
+.error-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.empty-state {
+  font-size: 40px;
+}
+
+.error-state {
+  color: red;
+  font-size: 26px;
+}
+
+.error-state--large {
+  font-size: 40px;
+}
+
+.location-mode-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 15px 0;
+}
+
+.location-mode-button,
+.manual-location__submit {
+  background-color: white;
+  border: 1px solid gray;
+  font-weight: 700;
+  padding: 8px 16px;
+}
+
+.location-mode-button--active {
+  background-color: #ffe5e5;
+  border: 3px solid red;
+}
+
+.manual-location {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  padding-bottom: 15px;
+}
+
+.manual-location__form {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  max-width: 650px;
+  width: 100%;
+}
+
+.manual-location__input {
+  border: 1px solid gray;
+  flex: 1;
+  min-width: 260px;
+  padding: 8px;
+}
+
+.manual-location__hint {
+  font-size: 13px;
+  max-width: 650px;
+  padding-top: 6px;
+  text-align: center;
+}
+
+.manual-location__success {
+  color: green;
+  font-weight: 700;
+  padding-top: 6px;
+}
+
+.manual-location__error {
+  color: red;
+  padding-top: 6px;
+  text-align: center;
+}
+
+.pharmacy-grid__item {
+  border: 2px solid gray;
+  padding: 6px;
+}
+
+.pharmacy-card {
+  background-color: white;
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.page-qr-card {
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.qr-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.page-qr-card__text {
+  font-size: 15px;
+  line-height: 1.5;
+  padding-top: 20px;
+  text-align: center;
+}
+
+.pharmacy-card__name,
+.pharmacy-card__address,
+.pharmacy-card__district,
+.pharmacy-card__phone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pharmacy-card__name {
+  font-size: 22px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.pharmacy-card__address {
+  font-size: 15px;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.pharmacy-card__district {
+  color: red;
+  font-size: 20px;
+  font-weight: 500;
+}
+
+.pharmacy-card__phone {
+  font-size: 15px;
+  font-weight: 400;
+}
+
+.pharmacy-card__qr {
+  height: 60px !important;
+  margin-top: -20px;
+  width: 60px !important;
+}
+
 @media (max-width: 767px) {
-  
-.main-container {
-  padding-left: 5px;
-  padding-right: 5px;
-  /* Add your desired background color here */
-}
+  .main-container {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
 }
 
 .linkStyle {
