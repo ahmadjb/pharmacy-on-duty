@@ -148,6 +148,26 @@ code {
   text-align: center;
 }
 
+.map-picker {
+  max-width: 850px;
+  padding-top: 12px;
+  width: 100%;
+}
+
+.map-picker__map {
+  border: 2px solid gray;
+  border-radius: 6px;
+  height: 360px;
+  overflow: hidden;
+  width: 100%;
+}
+
+.map-picker__hint {
+  font-size: 13px;
+  padding-top: 6px;
+  text-align: center;
+}
+
 .pharmacy-grid__item {
   border: 2px solid gray;
   padding: 6px;

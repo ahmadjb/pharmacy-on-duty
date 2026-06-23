@@ -1,11 +1,15 @@
+import MapPicker from './MapPicker';
+
 const LocationSelector = ({
   locationMode,
   manualLocationText,
   manualLocation,
   manualLocationError,
+  currentLocation,
   onModeChange,
   onManualLocationTextChange,
   onManualLocationSubmit,
+  onMapLocationSelect,
 }) => (
   <>
     <div className="location-mode-selector">
@@ -40,8 +44,13 @@ const LocationSelector = ({
           </button>
         </div>
         <div className="manual-location__hint">
-          Örnek: Google Maps paylaşım linki ya da 39.9208, 32.8541
+          Örnek: adres, Google Maps paylaşım linki ya da 39.9208, 32.8541
         </div>
+        <MapPicker
+          selectedLocation={manualLocation}
+          currentLocation={currentLocation}
+          onLocationSelect={onMapLocationSelect}
+        />
         {manualLocation ? (
           <div className="manual-location__success">
             Seçilen nokta: {manualLocation.latitude}, {manualLocation.longitude}

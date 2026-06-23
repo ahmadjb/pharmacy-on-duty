@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import AppHeader from './components/AppHeader';
 import LocationSelector from './components/LocationSelector';
 import PharmacyGrid from './components/PharmacyGrid';
+import { geocodeAddress } from './services/geocodingApi';
 import { fetchCities, fetchOnDutyPharmacies } from './services/pharmacyApi';
 import { getClosestLocations, parseCoordinates } from './utils/location';
 
@@ -99,16 +100,41 @@ const App = () => {
     }
   };
 
-  const handleManualLocationSubmit = () => {
-    const coordinates = parseCoordinates(manualLocationText);
+  const handleManualLocationSubmit = async () => {
+    const trimmedLocationText = manualLocationText.trim();
+    const coordinates = parseCoordinates(trimmedLocationText);
 
-    if (!coordinates) {
-      setManualLocation(null);
-      setManualLocationError('Konum okunamadı. Google Maps linki veya "39.9208, 32.8541" formatında koordinat giriniz.');
+    if (!trimmedLocationText) {
+      setManualLocationError('Lütfen adres, Google Maps linki veya koordinat giriniz.');
       return;
     }
 
-    setManualLocation(coordinates);
+    if (coordinates) {
+      setManualLocation(coordinates);
+      setManualLocationError('');
+      return;
+    }
+
+    try {
+      const geocodedLocation = await geocodeAddress(trimmedLocationText);
+
+      if (!geocodedLocation) {
+        setManualLocation(null);
+        setManualLocationError('Adres bulunamadı. Lütfen daha açık bir adres, Google Maps linki veya "39.9208, 32.8541" formatında koordinat giriniz.');
+        return;
+      }
+
+      setManualLocation(geocodedLocation);
+      setManualLocationError('');
+    } catch (error) {
+      console.error('Error geocoding address:', error);
+      setManualLocationError('Adres aranırken hata oluştu. Lütfen tekrar deneyiniz.');
+    }
+  };
+
+  const handleMapLocationSelect = (location) => {
+    setManualLocation(location);
+    setManualLocationText(`${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}`);
     setManualLocationError('');
   };
 
@@ -135,9 +161,11 @@ const App = () => {
             manualLocationText={manualLocationText}
             manualLocation={manualLocation}
             manualLocationError={manualLocationError}
+            currentLocation={currentLocation}
             onModeChange={handleLocationModeChange}
             onManualLocationTextChange={setManualLocationText}
             onManualLocationSubmit={handleManualLocationSubmit}
+            onMapLocationSelect={handleMapLocationSelect}
           />
 
           {(locationMode === LOCATION_MODES.CURRENT && geolocation === false && selectedCity !== "" && closestLocations.length === 0) ? (
