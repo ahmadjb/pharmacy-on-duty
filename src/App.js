@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import AppHeader from './components/AppHeader';
 import LocationSelector from './components/LocationSelector';
 import PharmacyGrid from './components/PharmacyGrid';
-import { geocodeAddress } from './services/geocodingApi';
+import { geocodeAddress, isGoogleMapsUrl, resolveGoogleMapsLink } from './services/geocodingApi';
 import { fetchCities, fetchOnDutyPharmacies } from './services/pharmacyApi';
 import { getClosestLocations, parseCoordinates } from './utils/location';
 
@@ -113,6 +113,26 @@ const App = () => {
       setManualLocation(coordinates);
       setManualLocationError('');
       return;
+    }
+
+    if (isGoogleMapsUrl(trimmedLocationText)) {
+      try {
+        const mapsCoordinates = await resolveGoogleMapsLink(trimmedLocationText);
+
+        if (mapsCoordinates) {
+          setManualLocation(mapsCoordinates);
+          setManualLocationError('');
+          return;
+        }
+
+        setManualLocation(null);
+        setManualLocationError('Google Maps linkinden konum okunamadı. Lütfen linki kontrol ediniz veya koordinat giriniz.');
+        return;
+      } catch (error) {
+        console.error('Error resolving Google Maps link:', error);
+        setManualLocationError('Google Maps linki okunurken hata oluştu. Lütfen tekrar deneyiniz.');
+        return;
+      }
     }
 
     try {
