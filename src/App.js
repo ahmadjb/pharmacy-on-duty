@@ -2,9 +2,47 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import QRCode from 'qrcode.react';
 
-const YourComponent = ({ latitude, longitude }) => {
+const API_KEY = 'nghLrrrA3KsrerJ0YaWCQb2VAfadnzQxUZllZNCUCY7nRhF2fnKPVEkDvKcr';
 
+const getPharmacyMapUrl = (pharmacy) =>
+  `https://www.google.com/maps?q=${encodeURIComponent(`${pharmacy?.pharmacyName || ''} ${pharmacy?.address || ''}`)}`;
 
+const parseCoordinates = (value) => {
+  if (!value) {
+    return null;
+  }
+
+  let decodedValue = value;
+
+  try {
+    decodedValue = decodeURIComponent(value);
+  } catch (error) {
+    decodedValue = value;
+  }
+
+  const patterns = [
+    /@(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/,
+    /[?&](?:q|ll)=(-?\d+(?:\.\d+)?),\s*(-?\d+(?:\.\d+)?)/,
+    /(-?\d{1,2}(?:\.\d+)?)\s*,\s*(-?\d{1,3}(?:\.\d+)?)/,
+  ];
+
+  for (const pattern of patterns) {
+    const match = decodedValue.match(pattern);
+
+    if (match) {
+      const latitude = Number(match[1]);
+      const longitude = Number(match[2]);
+
+      if (Math.abs(latitude) <= 90 && Math.abs(longitude) <= 180) {
+        return { latitude, longitude };
+      }
+    }
+  }
+
+  return null;
+};
+
+const YourComponent = () => {
   const [myLatitude, setMyLatitude] = useState(null);
   const [myLongitude, setMyLongitude] = useState(null);
   const [openedPharmacies, setOpenedPharmacies] = useState([]);
@@ -13,44 +51,18 @@ const YourComponent = ({ latitude, longitude }) => {
   const [currentDay, setCurrentDay] = useState('');
   const [cities, setCities] = useState([]);
   const [selectedCity, setSelectedCity] = useState('');
-  const [geolocation, setGocation] = useState(false);
-
-
-  const pharmacyName = "Yeni Filiz Eczanesi"; // Specify the name of the pharmacy you want to search for
-  const encodedPharmacyName = encodeURIComponent(pharmacyName);
-  const mapsUrl = `https://www.google.com/maps?q=${encodedPharmacyName}`;
-
-
-
-
-  useEffect(() => {
-    if (selectedCity) {
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            console.log('Location is enabled');
-            setGocation(true);
-          },
-          (error) => {
-            const openSettings = window.confirm('Konum etkin değil. Lütfen etkinleştirin.');
-            if (openSettings) {
-              window.location.href = 'app-settings:';
-            }
-          }
-        );
-      }
-    }
-
-    //fetchPharmacies();
-
-  }, []);
+  const [geolocation, setGeolocation] = useState(false);
+  const [locationMode, setLocationMode] = useState('current');
+  const [manualLocationText, setManualLocationText] = useState('');
+  const [manualLocation, setManualLocation] = useState(null);
+  const [manualLocationError, setManualLocationError] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axios.get('https://www.nosyapi.com/apiv2/service/pharmacies-on-duty/cities', {
           params: {
-            'apiKey': 'nghLrrrA3KsrerJ0YaWCQb2VAfadnzQxUZllZNCUCY7nRhF2fnKPVEkDvKcr'
+            apiKey: API_KEY
           }
         });
         setCities(response?.data?.data);
@@ -68,24 +80,26 @@ const YourComponent = ({ latitude, longitude }) => {
     const today = new Date();
     const options = { year: 'numeric', month: 'long', day: 'numeric' };
 
-    // Set the current date and day in the state
     setCurrentDate(today.toLocaleDateString('tr-TR', options));
     setCurrentDay(today.toLocaleDateString('tr-TR', { weekday: 'long' }));
-  }, []); // Empty dependency array ensures the effect runs only once on component mount
-
-
-
+  }, []);
 
   useEffect(() => {
+    if (!selectedCity) {
+      setOpenedPharmacies([]);
+      setClosestLocations([]);
+      return;
+    }
+
     const fetchData = async () => {
       try {
         const response = await axios.get('https://www.nosyapi.com/apiv2/service/pharmacies-on-duty', {
           params: {
-            'apiKey': 'nghLrrrA3KsrerJ0YaWCQb2VAfadnzQxUZllZNCUCY7nRhF2fnKPVEkDvKcr',
-            'city': selectedCity
+            apiKey: API_KEY,
+            city: selectedCity
           }
         });
-        setOpenedPharmacies(response.data.data);
+        setOpenedPharmacies(response?.data?.data || []);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
@@ -99,78 +113,77 @@ const YourComponent = ({ latitude, longitude }) => {
 
 
   useEffect(() => {
+    if (locationMode !== 'current') {
+      return;
+    }
+
     if (navigator.geolocation) {
       navigator.geolocation.getCurrentPosition((position) => {
         setMyLatitude(position.coords.latitude);
         setMyLongitude(position.coords.longitude);
+        setGeolocation(true);
       }, (error) => {
         console.error('Error getting geolocation:', error);
+        setGeolocation(false);
       });
     } else {
       console.error('Geolocation is not supported by this browser.');
+      setGeolocation(false);
     }
-  }, []);
-  console.log(myLatitude, myLongitude);
-
+  }, [locationMode]);
 
   useEffect(() => {
-    if (myLatitude !== null && myLongitude !== null && openedPharmacies.length > 0) {
-      const distances = openedPharmacies.map((location, index) => {
+    const startPoint = locationMode === 'manual'
+      ? manualLocation
+      : { latitude: myLatitude, longitude: myLongitude };
+    const hasStartPoint = Number.isFinite(startPoint?.latitude) && Number.isFinite(startPoint?.longitude);
+
+    if (hasStartPoint && openedPharmacies.length > 0) {
+      const distances = openedPharmacies.map((location) => {
         const earthRadius = 6371; // Earth's radius in km
-        const dLat = (myLatitude - location.latitude) * Math.PI / 180;
-        const dLon = (myLongitude - location.longitude) * Math.PI / 180;
+        const dLat = (startPoint.latitude - location.latitude) * Math.PI / 180;
+        const dLon = (startPoint.longitude - location.longitude) * Math.PI / 180;
         const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-          Math.cos(myLatitude * Math.PI / 180) * Math.cos(location.latitude * Math.PI / 180) *
+          Math.cos(startPoint.latitude * Math.PI / 180) * Math.cos(location.latitude * Math.PI / 180) *
           Math.sin(dLon / 2) * Math.sin(dLon / 2);
         const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         const distance = earthRadius * c;
 
-        // Add the distance as a new key to the location object
         const locationWithDistance = { ...location, distance };
-
-        // Log the distance for each location
-        console.log(`Distance to ${openedPharmacies[index].pharmacyName}: ${distance} km`);
 
         return { location: locationWithDistance, distance };
 
       });
 
       const sortedDistances = distances.sort((a, b) => a.distance - b.distance);
-      const closest5Locations = sortedDistances.slice(0, 12).map(item => item.location);
-      setClosestLocations(closest5Locations);
+      const closest12Locations = sortedDistances.slice(0, 12).map(item => item.location);
+      setClosestLocations(closest12Locations);
+    } else {
+      setClosestLocations([]);
     }
-  }, [myLatitude, myLongitude, openedPharmacies]);
+  }, [myLatitude, myLongitude, openedPharmacies, locationMode, manualLocation]);
 
-  //console.log(openedPharmacies);
+  const handleLocationModeChange = (mode) => {
+    setLocationMode(mode);
+    setManualLocationError('');
 
-  //console.log(closestLocations);
-  // const numbers = Array.from({ length: 25 }, (_, index) => index + 1);
-  //console.log(cities);
+    if (mode === 'current') {
+      setManualLocation(null);
+    }
+  };
 
+  const handleManualLocationSubmit = () => {
+    const coordinates = parseCoordinates(manualLocationText);
 
-  const [pharmacies, setPharmacies] = useState([]);
-  const [pharmacies2, setPharmacies2] = useState([]);
+    if (!coordinates) {
+      setManualLocation(null);
+      setManualLocationError('Konum okunamadı. Google Maps linki veya "39.9208, 32.8541" formatında koordinat giriniz.');
+      return;
+    }
 
-  useEffect(() => {
-    const fetchPharmacies = async () => {
-
-      const response = await axios.get('https://www.nosyapi.com/apiv2/service/pharmacies', {
-        params: {
-          'apiKey': 'nghLrrrA3KsrerJ0YaWCQb2VAfadnzQxUZllZNCUCY7nRhF2fnKPVEkDvKcr',
-          'city': 'ankara'
-        }
-      });
-      console.log("responsesssssssssss", response);
-      setPharmacies2(response);
-    };
-
-    //fetchPharmacies();
-
-  }, []); // Empty dependency array to run effect only once
-
-  console.log('Pharmacies in ankara:', pharmacies2?.data?.data);
-  console.log("---------------------------------------");
-  // Log the pharmacies array
+    setManualLocation(coordinates);
+    setManualLocationError('');
+  };
 
   return (
     <div>
@@ -206,18 +219,71 @@ const YourComponent = ({ latitude, longitude }) => {
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 40, textAlign: 'center' }}>
               Lütfen bir şehir seçiniz
             </div>
-          ):""}
-          {(geolocation === false && selectedCity !== "" && closestLocations.length === 0) ?  (
+          ) : ""}
+
+          <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10, paddingTop: 15, paddingBottom: 15, flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              onClick={() => handleLocationModeChange('current')}
+              style={{ padding: '8px 16px', border: locationMode === 'current' ? '3px solid red' : '1px solid gray', backgroundColor: locationMode === 'current' ? '#ffe5e5' : 'white', fontWeight: 700 }}
+            >
+              Benim konumum
+            </button>
+            <button
+              type="button"
+              onClick={() => handleLocationModeChange('manual')}
+              style={{ padding: '8px 16px', border: locationMode === 'manual' ? '3px solid red' : '1px solid gray', backgroundColor: locationMode === 'manual' ? '#ffe5e5' : 'white', fontWeight: 700 }}
+            >
+              Nokta seç
+            </button>
+          </div>
+
+          {locationMode === 'manual' ? (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column', paddingBottom: 15 }}>
+              <div style={{ width: '100%', maxWidth: 650, display: 'flex', gap: 8, flexWrap: 'wrap', justifyContent: 'center' }}>
+                <input
+                  type="text"
+                  value={manualLocationText}
+                  onChange={(event) => setManualLocationText(event.target.value)}
+                  placeholder="Google Maps linki veya koordinat giriniz"
+                  style={{ flex: 1, minWidth: 260, padding: 8, border: '1px solid gray' }}
+                />
+                <button type="button" onClick={handleManualLocationSubmit} style={{ padding: '8px 16px', border: '1px solid gray', backgroundColor: 'white', fontWeight: 700 }}>
+                  Konumu kullan
+                </button>
+              </div>
+              <div style={{ maxWidth: 650, paddingTop: 6, fontSize: 13, textAlign: 'center' }}>
+                Örnek: Google Maps paylaşım linki ya da 39.9208, 32.8541
+              </div>
+              {manualLocation ? (
+                <div style={{ color: 'green', paddingTop: 6, fontWeight: 700 }}>
+                  Seçilen nokta: {manualLocation.latitude}, {manualLocation.longitude}
+                </div>
+              ) : ""}
+              {manualLocationError ? (
+                <div style={{ color: 'red', paddingTop: 6, textAlign: 'center' }}>
+                  {manualLocationError}
+                </div>
+              ) : ""}
+            </div>
+          ) : ""}
+
+          {(locationMode === 'current' && geolocation === false && selectedCity !== "" && closestLocations.length === 0) ? (
             <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 40, textAlign: 'center', color: 'red' }}>
               Konum etkin değil. Lütfen etkinleştirin.
             </div>
-          ):""}
+          ) : ""}
+
+          {(locationMode === 'manual' && selectedCity !== "" && !manualLocation) ? (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 26, textAlign: 'center', color: 'red' }}>
+              Lütfen hesaplama için bir nokta giriniz.
+            </div>
+          ) : ""}
 
           <div className="row">
-            {closestLocations.length > 0 && closestLocations?.map((number, index) => (
+            {closestLocations.length > 0 && closestLocations.map((location, index) => (
               <div key={index} className="col-md-3 col-sm-6" style={{ padding: 6, border: '2px solid gray' }}>
-                <div style={{ border: 10, padding: 10, backgroundColor: 'white', borderRadius: 5, border: '' }}>
-                  {/*{closestLocations[index]?.pharmacyName}*/}
+                <div style={{ padding: 10, backgroundColor: 'white', borderRadius: 5 }}>
                   {
                     closestLocations.length > 0 ? (
                       index === 11 ? (
@@ -240,20 +306,20 @@ const YourComponent = ({ latitude, longitude }) => {
                         </div>
                       ) : (
                         <>
-                          <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 22, fontWeight: 900, textAlign: 'center' }}>{closestLocations[index]?.pharmacyName}</div>
+                          <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 22, fontWeight: 900, textAlign: 'center' }}>{location?.pharmacyName}</div>
                           <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 15, textAlign: 'center', lineHeight: '1.5' }}>
-                            {closestLocations[index]?.address}
+                            {location?.address}
                           </div>
                           <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 20, fontWeight: 500, color: 'red' }}>
-                            {`${closestLocations[index]?.district} (${Math.round(closestLocations[index]?.distance)}-${Math.round(closestLocations[index]?.distance + 2)})km`}
+                            {`${location?.district} (${Math.round(location?.distance)}-${Math.round(location?.distance + 2)})km`}
                           </div>
                           <div style={{ backgroundColor: '', display: 'flex', justifyContent: 'center', alignItems: 'center', fontSize: 15, fontWeight: 400 }}>
-                            TEL: <a href={`tel:${closestLocations[index]?.phone}`} className="linkStyle">{closestLocations[index]?.phone}</a>
+                            TEL: <a href={`tel:${location?.phone}`} className="linkStyle">{location?.phone}</a>
                           </div>
 
-                          <a href={`https://www.google.com/maps?q=${encodeURIComponent(`${closestLocations[index]?.pharmacyName}${closestLocations[index]?.address}`)}`} target="_blank" rel="noopener noreferrer">
+                          <a href={getPharmacyMapUrl(location)} target="_blank" rel="noopener noreferrer">
                             <div style={{ backgroundColor: '' }}>
-                              <QRCode value={`https://www.google.com/maps?q=${encodeURIComponent(`${closestLocations[index]?.pharmacyName}${closestLocations[index]?.address}`)}`} style={{ height: 60, width: 60, marginTop: -20 }} />
+                              <QRCode value={getPharmacyMapUrl(location)} style={{ height: 60, width: 60, marginTop: -20 }} />
                             </div>
                           </a>
 
@@ -273,11 +339,6 @@ const YourComponent = ({ latitude, longitude }) => {
 
       </div>
 
-
-      {/* <div>
-        <p>Google Maps URL: {mapsUrl}</p>
-        <QRCode value={mapsUrl} />
-      </div>*/}
     </div>
   );
 };
