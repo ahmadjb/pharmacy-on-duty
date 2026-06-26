@@ -28,6 +28,8 @@ export const translations = {
     enterPoint: 'Lütfen hesaplama için bir nokta giriniz.',
     pageQrText: "Bu QR'yi tarayarak bu sayfaya cihazınızdan ulaşabilirsiniz.",
     phone: 'TEL',
+    shareLocation: 'Konumu paylaş',
+    linkCopied: 'Link kopyalandı',
     workingHours: 'Eczanelerimiz, hafta içi 08.30-19.00, Cumartesi 09.30-19.00 arası çalışır. Nöbetçi eczaneler ertesi gün açılış saatine kadar hizmet verir, Pazar ve tatil günlerinde ise 09.30’da açılır, ertesi güne kadar hizmet verir.',
     languageLabel: 'Dil',
     errors: {
@@ -55,6 +57,8 @@ export const translations = {
     enterPoint: 'Please enter a point for calculation.',
     pageQrText: 'Scan this QR code to open this page on your device.',
     phone: 'TEL',
+    shareLocation: 'Share location',
+    linkCopied: 'Link copied',
     workingHours: 'Our pharmacies are open weekdays from 08:30 to 19:00 and Saturdays from 09:30 to 19:00. Pharmacies on duty serve until the next opening time, and on Sundays and holidays they open at 09:30 and serve until the next day.',
     languageLabel: 'Language',
     errors: {
@@ -82,6 +86,8 @@ export const translations = {
     enterPoint: 'يرجى إدخال نقطة للحساب.',
     pageQrText: 'امسح رمز QR هذا لفتح الصفحة على جهازك.',
     phone: 'هاتف',
+    shareLocation: 'مشاركة الموقع',
+    linkCopied: 'تم نسخ الرابط',
     workingHours: 'تعمل صيدلياتنا أيام الأسبوع من 08:30 إلى 19:00، ويوم السبت من 09:30 إلى 19:00. الصيدليات المناوبة تقدم الخدمة حتى موعد الافتتاح التالي، وفي أيام الأحد والعطلات تفتح الساعة 09:30 وتستمر حتى اليوم التالي.',
     languageLabel: 'اللغة',
     errors: {

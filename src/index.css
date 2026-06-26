@@ -261,6 +261,32 @@ code {
   font-weight: 400;
 }
 
+.pharmacy-card__share {
+  align-items: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  justify-content: center;
+  padding-top: 6px;
+}
+
+.pharmacy-card__share-button {
+  background-color: #ffe5e5;
+  border: 1px solid red;
+  border-radius: 4px;
+  color: #000;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 4px 10px;
+}
+
+.pharmacy-card__share-status {
+  color: green;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .pharmacy-card__qr {
   height: 60px !important;
   margin-top: -20px;
