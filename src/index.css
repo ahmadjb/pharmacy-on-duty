@@ -270,15 +270,30 @@ code {
   padding-top: 6px;
 }
 
-.pharmacy-card__share-button {
+.pharmacy-card__share-button,
+.pharmacy-card__map-button {
+  align-items: center;
   background-color: #ffe5e5;
   border: 1px solid red;
   border-radius: 4px;
   color: #000;
   cursor: pointer;
+  display: inline-flex;
   font-size: 13px;
   font-weight: 700;
+  gap: 5px;
+  justify-content: center;
   padding: 4px 10px;
+}
+
+.pharmacy-card__share-icon {
+  fill: currentColor;
+  height: 14px;
+  width: 14px;
+}
+
+.pharmacy-card__map-button {
+  text-decoration: none;
 }
 
 .pharmacy-card__share-status {
